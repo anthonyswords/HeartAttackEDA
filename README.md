@@ -8,7 +8,7 @@ Aquesta projecte s'ha realitzat sota el context de l'assignatura Tipologia i cic
 
 ## Fitxers del codi font
 
-* **dataset/**: magatzem del CSV original i transformats.
+* **heart.csv**: fitxer CSV original.
 * **requirements.txt**: llibreries i versions utilitzades
 * **source/**: carpeta modular on es localitza tot el codi font en llenguatge R.
 

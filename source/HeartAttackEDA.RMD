@@ -17,11 +17,114 @@ output:
     toc: yes
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 ```
 
+# Library
+
+```{r library, message=FALSE, warning=FALSE}
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
+if (!require('tidyr')) install.packages('tidyr'); library('tidyr')
+if (!require('reshape2')) install.packages('reshape2'); library('reshape2')
+if (!require('corrplot')) install.packages('corrplot'); library('corrplot')
+```
+
+
+# Introducció
+
+```{r}
+heart <- read.csv("heart.csv")
+head(heart)
+```
+
+* Edat: Edat del pacient
+* Sexe: Sexe del pacient
+* exang: angina induïda per l'exercici (1 = sí; 0 = no)
+* ca: nombre de vaixells principals (0-3)
+* cp : tipus de dolor de pit tipus de dolor de pit
+  * Valor 1: angina típica
+  * Valor 2: angina atípica
+  * Valor 3: dolor no anginós
+  * Valor 4: asimptomàtic
+* trtbps: pressió arterial en repòs (en mm Hg)
+* chol : colestoral en mg/dl obtingut mitjançant el sensor IMC
+* fbs : (sucre en sang en dejú > 120 mg/dl) (1 = cert; 0 = fals)
+* rest_ecg : resultats electrocardiogràfics en repòs
+  * Valor 0: normal
+  * Valor 1: amb anormalitat de l'ona ST-T (inversions de l'ona T i/o elevació o depressió ST > 0,05 mV)
+  * Valor 2: mostra una hipertròfia ventricular esquerra probable o definitiva segons els criteris d'Estes
+* thalach: 	(3)normal, (6)defecte fixat, (7)defecte reversible
+* objectiu: (0) malaltia cardíaca no present, (1) malaltia cardíaca present
+
+L' objectiu és la variable de resposta de sortida (depenent) i és qualitativa. Notem quin tipus de dades presenta el conjunt:
+
+```{r}
+str(heart)
+```
+
+Observarem si en trobem cap valor perdut:
+
+```{r}
+print("Count of missing values")
+sapply(heart, function(x) sum(is.na(x)))
+```
+
+No hi ha cap valor NA's, en conseqüència, no hem de realitzar el procés d'eliminació de valors perduts. Haurem d'analitzar si hi ha una fila duplicada:
+
+
+```{r}
+sum(duplicated(heart))
+```
+Actualitzem i ens quedem amb les files úniques:
+
+```{r}
+heart <- unique(heart)
+dim(heart)
+```
+
+
+Així doncs, ara observarem un resum estadístic del conjunt:
+
+
+```{r}
+summary(heart)
+```
+
+
+Mitjançant un gràfic mostrarem els valors extrems de cada columna:
+
+```{r message=FALSE, warning=FALSE}
+meltData <- melt(heart)
+plt <- ggplot(meltData, aes(factor(variable), value)) 
+plt + geom_boxplot() + facet_wrap(~variable, scale="free") + labs(x = "Heart outliers", y = "value")
+```
+
+**Pendent de qué fem amb els outliers
+
+
+
+Finalment, ho resumir en aquesta taula:
+
+| Característiques 	|                            Definició                            	|   Tipus  	|                                         Valor                                         	|
+|:----------------:	|:---------------------------------------------------------------:	|:--------:	|:-------------------------------------------------------------------------------------:	|
+|       edat       	|                     Edat del pacient en anys                    	|  Numèric 	|                                         29-77                                         	|
+|       sexe       	|                              Gènere                             	| Nominals 	|                                (0) femení, (1) masculí                                	|
+|        cp        	|                      Tipus de dolor al pit                      	| Nominals 	|     (0) angina típica, (1) angina atípica, (2) dolor no anginós, (3) asimptomàtic     	|
+|     trestbps     	|                Pressió arterial en repòs en mmHg                	|  Numèric 	|                                         94-200                                        	|
+|        col       	|                    Colesterol sèric en mg/dl                    	|  Numèric 	|                                        126-564                                        	|
+|        fbs       	|            Sucre en sang en dejú superior a 120 mg/dl           	| Nominals 	|                                 (0) Fals (1) Veritable                                	|
+|      restecg     	|             Resultats electrocardiogràfics en repòs             	| Nominals 	| (0)normal, (1)anormalitat de l'ona ST-T, (2)probable hipertròfia ventricular esquerre 	|
+|       talac      	|              Freqüència cardíaca màxima aconseguida             	|  Numèric 	|                                        71 –202                                        	|
+|       exang      	|               Angina de pit induïda per l'exercici              	| Nominals 	|                                       (0)No(1)Sí                                      	|
+|     vell cim     	| Depressió del ST induïda per l'exercici en relació amb el repòs 	|  Numèric 	|                                       -2,6 - 6,2                                      	|
+|      pendent     	|          El pendent del segment ST de l'exercici màxim          	| Nominals 	|                       (1) en pendent, (2) plana, (3) en pendent                       	|
+|        ca        	|       Nombre de vasos principals acolorits per fluorosopia      	| Nominals 	|                                       0, 1, 2, 3                                      	|
+|       thal       	|                            Talassèmia                           	| Nominals 	|                   (3)normal, (6)defecte fixat, (7)defecte reversible                  	|
+|     objectiu     	|                 Diagnòstic de malalties del cor                 	| Nominals 	|            (0) malaltia cardíaca no present, (1) malaltia cardíaca present            	|
+
+
+# EDA
 
 

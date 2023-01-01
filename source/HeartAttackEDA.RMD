@@ -71,7 +71,12 @@ print("Count of missing values")
 sapply(heart, function(x) sum(is.na(x)))
 ```
 
-No hi ha cap valor NA's, en conseqüència, no hem de realitzar el procés d'eliminació de valors perduts. Haurem d'analitzar si hi ha una fila duplicada:
+```{r}
+blankValues <- heart == ""
+colSums(blankValues)
+```
+
+No hi ha cap valor NA's ni valors buits, en conseqüència, no hem de realitzar el procés d'eliminació de valors perduts. Haurem d'analitzar si hi ha una fila duplicada:
 
 
 ```{r}

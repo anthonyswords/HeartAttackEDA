@@ -263,9 +263,119 @@ cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "reg
 
 # Models generats
 
-Un cop tenim el dataset net i subdividit en entrenament i test, procedirem a crear diferents models per tal de predir la variable resultat "output". Per tant, l'objectiu serà obtenir un o varis models eficaços que permetin predir si un pacient és propens a patir un atac de cor o no.
+Un cop tenim el dataset net i subdividit en entrenament i test, procedirem a realitzar diferents anàlisis i crear diferents models per predir informació relacionada amb el dataset.
 
-##Model de regressió logística
+Per una banda, realitzarem un contrast de mitjanes per tal de saber si hi ha diferències entre la possibilitat 'un atac de cor entre homes i dones.
+
+També, analitzarem les correlacions entre els diferents atributs del dataset "heart" del que disposem.
+
+Per últim, crearem un model de regressió logística per tal de predir les possibilitats d'atac de cor d'un pacient.
+
+
+
+
+## Anàlisi de la normalitat i homogeneïtat de la variància
+
+En primer lloc, abans d'aplicar cap model, és necessari conèixer si el conjunt de dades segueix una distribució normal i si presenta homoscedasticitat, doncs en base a axiò, podrem aplicar uns models o uns altres.
+
+Així doncs, començarem amb l'anàlisi de normalitat. Cal tenir present, però, que la variable independent que volem predir (output) es tracta d'un atribut binari, és a dir, només pot prendre dos possibles valors. Per tant, la distribució d'una variable dicotòmica mai podrà presentar una distribució normal.
+
+Tot i així, apliquem el test de Kolmogorov-Smirnov sota la hipòtesi nul·la de que les dades són normals. També aplicarem el test de Shapiro-Wilk.
+
+```{r}
+ks.test(heart$output, pnorm, mean(heart$output), sd(heart$output))
+shapiro.test(heart$output)
+```
+Observem que obtenim un p-valor de quasi zero pels dos tests, fet que ens permet rebutjar la hipòtesi nul·la. Per tant, podem dir que les dades no presenten normalitat. 
+
+Tot i així, en tenir un conjunt significativament gran (més de 30 registres) pel Teorema del Límit central podem suposar que la mitjana de les dades sí que presenta normalitat.
+
+Per altra banda, procedim a analitzar si el conjunt presenta homoscedasticitat, és a dir, igualtat de variància. Per a fer-ho, utilitzarem la funció var.test(). Aquest test l'aplicarem per saber si la variable output presenta igualtat de variàncies o no entre homes i dones.
+
+Per aconseguir-ho utilitzarem la funció var.test(), sota la hipòtesi nul·la d'igualtat de variàncies:
+
+```{r}
+var.test( heart$output[heart$sex_cat=="F"], heart$output[heart$sex_cat=="M"] )
+```
+
+Obtenim un p-valor  de 0.15, fet que no ens permet rebutjar la hipòtesi de igualtat de variàncies. Per tant, podem dir que la probabilitat d'un atac de cor entre homes i dones presenta igualtat de variàncies.
+
+
+## Anàlisi de correlacions
+
+En aquesta secció, procedirem a analitzar quines correlacions presenten els diferents atributs.
+
+Utilitzarem només els atributs de tipus numèric:
+
+```{r}
+mat <- cor(heart[,c("age", "sex",  "trtbps","chol","fbs","thalachh","exng","oldpeak","slp","caa","thall", "output")])
+#mat <- cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")])
+#corrplot(cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")]), method = #'color', tl.col = 'black') 
+
+#corrplot(cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")]), method = #'color', tl.col = 'black', sig.level=0.05,  tl.cex=font_size, insig="p-value") 
+
+#cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")])
+#mat
+##corrplot(mat, method="color", p.mat = mat, insig="p-value",addshade="all")
+
+corrplot(mat, method = 'number', number.digits = 2, addCoef.col = 15,number.cex = 0.6
+) # colorful number
+
+
+```
+
+
+Del gràfic obtingut cal interpretar el següent. Si el nombre és positiu i proper a 1, les dues variables presenten correlació positiva, és a dir, les dues variables augmenten per igual. En canvi, si el valor és negatiu i proper a -1, les dues variables presenten correlació negativa, és a dir, mentres una es fa gran, l'altra es fa petita.
+
+
+Si ens fixem en les correlacions respecte Output:
+
+- La variable que més correlació positiva presenta és thalach, es a dir, com més freqüència cardíaca màxima presenta el pacient, més probabilitat d'atac de cor.
+
+- La variable exng presenta una correlació negativa. És a dir, hi ha correlació entre no tenir angina en fer esport i patir un atac de cor.
+
+- La variable caa presenta correlació negativa. Hi ha correlació entre un nombre baix de vasos cardíacs principals i patir un atac de cor.
+
+- La variable oldpeak presenta correlació negativa. Hi ha correlació entre una baixa depressió del ST induïda per l'exercici en relació amb el repòs i patir un atac de cor.
+
+
+Tot i així, ens fixem que en valor absolut, cap correlació presenta un valor superior a 0,5. Això vol dir, que realment tenim un nivell bastant baix de correlació entre les variables i el succés output.
+
+
+
+## Contrast de mitjanes
+
+Ara, aplicarem un contrast de mitjanes per saber si hi ha diferències entre les possibilitats d'un atac de cor entre homes i dones.
+
+En aquest cas, utilitzarem les següents hipòtesis nul·la i alternativa:
+
+
+
+Hipòtesi nul·la: l'output entre homes i dones és igual.
+
+$H_0 : Output_{homes} = Output_{dones}$
+
+
+Hipòtesi alternativa: l'output entre homes i dones és diferent.
+
+
+$H_1 : Output_{homes} \neq Output_{dones}$
+
+
+Per aplicar el contrast, cal recordar les dues conclusions extretes prèviament: es tracta d'una distribució normal (TLC) amb variàncies desconegudes i iguals. Així doncs, podrem aplicar una prova de contrast d'hipòtesi de tipus paramètric, com la t d'student.
+
+Per tant, aplicarem la funció t.test():
+
+```{r}
+contrast_mitjanes <- t.test( heart$output[heart$sex_cat=="F"], heart$output[heart$sex_cat=="M"],alternative="two.sided", var.equal=TRUE)
+contrast_mitjanes
+
+```
+Obtenim un p-valor de pràcticament zero, fet que ens permet rebutjar la hipòtesi nul·la. Per tant, amb un nivell de confiança superior al 99%, podem dir que hi ha diferències entre la possiblitat d'un atac de cor entre homes i dones. 
+
+
+
+## Model de regressió logística
 
 Donat que la variable a predir (output) conté una informació binària (1 = propens a patir un atac de cor; 0 = no propens a patir un atac de cor), el primer model que crearem serà una regressió logística, la qual permet predir una variable dicotòmica.
 
@@ -378,12 +488,7 @@ nrow(resultat_model[resultat_model$output==1,])) ))
 
 
 
-```{r}
-#test
-#if (!require('corrplot')) install.packages('corrplot'); library('corrplot')
 
-#corrplot(cor(heart), method = 'color', tl.col = 'black') 
-```
 
 
 

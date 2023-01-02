@@ -21,6 +21,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+En aquest document detallarem totes les anàlisis realitzades i els models construits en el marc de la segona pràctica de l'assignatura de Tipologia i Cicle de vida de les dades. En aquesta, utilitzarem el dataset que trobem al següent enllaç https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset, on tenim informació mèdica sobre diferents pacients i si aquests van patir un atac de cor o no.
+
+
+
 # Library
 
 ```{r library, message=FALSE, warning=FALSE}
@@ -29,42 +34,84 @@ if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
 if (!require('tidyr')) install.packages('tidyr'); library('tidyr')
 if (!require('reshape2')) install.packages('reshape2'); library('reshape2')
 if (!require('corrplot')) install.packages('corrplot'); library('corrplot')
+if(!require(gmodels)) install.packages('gmodels', repos='http://cran.us.r-project.org');library(gmodels)
+
 ```
 
 
 # Introducció
 
+
+En primer lloc, procedim a carregar a la variable "heart" el contingut del dataset "HeartAttackAnalysis.csv" adjunt amb el projecte i en mostrem els primers registres.
+
+
 ```{r}
-heart <- read.csv("heart.csv")
+heart <- read.csv("HeartAttackAnalysis.csv")
 head(heart)
 ```
 
-* Edat: Edat del pacient
-* Sexe: Sexe del pacient
-* exang: angina induïda per l'exercici (1 = sí; 0 = no)
-* ca: nombre de vaixells principals (0-3)
-* cp : tipus de dolor de pit tipus de dolor de pit
-  * Valor 1: angina típica
-  * Valor 2: angina atípica
-  * Valor 3: dolor no anginós
-  * Valor 4: asimptomàtic
-* trtbps: pressió arterial en repòs (en mm Hg)
-* chol : colestoral en mg/dl obtingut mitjançant el sensor IMC
-* fbs : (sucre en sang en dejú > 120 mg/dl) (1 = cert; 0 = fals)
-* rest_ecg : resultats electrocardiogràfics en repòs
-  * Valor 0: normal
-  * Valor 1: amb anormalitat de l'ona ST-T (inversions de l'ona T i/o elevació o depressió ST > 0,05 mV)
-  * Valor 2: mostra una hipertròfia ventricular esquerra probable o definitiva segons els criteris d'Estes
-* thalach: 	(3)normal, (6)defecte fixat, (7)defecte reversible
-* objectiu: (0) malaltia cardíaca no present, (1) malaltia cardíaca present
 
-L' objectiu és la variable de resposta de sortida (depenent) i és qualitativa. Notem quin tipus de dades presenta el conjunt:
+# Descripció dels atributs
+
+Un cop fet, mostrem quins atributs conté i la seva tipologia:
 
 ```{r}
 str(heart)
 ```
 
-Observarem si en trobem cap valor perdut:
+Els atributs dels que disposem són:
+
+* **edat:** Edat del pacient (enter)
+* **sex:** Sexe del pacient. Després d'investigar el dataset, arribem a la conclusió que el valor 1 indica que és home i el 0 que és dona. (enter)
+* **cp:** tipus de dolor de pit tipus de dolor de pit (enter)
+  * Valor 1: angina típica
+  * Valor 2: angina atípica
+  * Valor 3: dolor no anginós
+  * Valor 4: asimptomàtic
+* **trtbps:** pressió arterial en repòs (en mm Hg) (enter)
+* **chol:** colestoral en mg/dl obtingut mitjançant el sensor IMC (enter)
+* **fbs:** (sucre en sang en dejú > 120 mg/dl) (1 = cert; 0 = fals) (enter)
+* **rest_ecg:** resultats electrocardiogràfics en repòs (enter)
+  * Valor 0: normal
+  * Valor 1: amb anormalitat de l'ona ST-T (inversions de l'ona T i/o elevació o depressió ST > 0,05 mV)
+  * Valor 2: mostra una hipertròfia ventricular esquerra probable o definitiva segons els criteris d'Estes
+* **thalach:** 	freqüència cardíaca màxima aconseguida (enter)
+* **exang:** angina induïda per l'exercici (1 = sí; 0 = no) (enter)
+* **oldpeak:** Depressió del ST induïda per l'exercici en relació amb el repòs (decimal).
+* **slp** Desplaçament del segment ST en relació amb els increments de la freqüència cardíaca induïts per l'exercici (enter)
+* **caa** Nombre de vasos cardíacs principals (0-4) (enter)
+* **thall** Indica la taxa de talassèmia (0-3) (enter)
+* **output:** (0) malaltia cardíaca no present, (1) malaltia cardíaca present (enter)
+
+
+Així doncs, tenim  un total de 14 variables i 303 registres
+
+```{r}
+nrow(heart)
+```
+
+
+
+Un cop tenim present a quina informació fa referència cada una de les variables del dataset, mostrarem el seu resum, per veure quins són els valors mínims i màxims de cada una de les variables numèriques:
+
+```{r}
+summary(heart)
+```
+
+- Els pacients tenen entre 29 i 77 anys.
+- La pressió arterial en repòs va entre 94 i 200.
+- El nivell de colesterol va entre 126 i 564.
+- La freqüència màxima aconseguida pels pacients va d'entre 71 i 202.
+- L'old peak va des de 0 fins a 6,20.
+
+
+
+# Neteja de dades
+
+Tot seguit, procedirem a analitzar aquells registres que continguin valors buit o outliers amb la finalitat de corregir-los i deixar el dataset net per a poder ser utilitzat posteriorment.
+
+En primer lloc, mostrem quants valors buits (na) hi ha per a cada atribut:
+
 
 ```{r}
 print("Count of missing values")
@@ -89,16 +136,12 @@ heart <- unique(heart)
 dim(heart)
 ```
 
+Seguidament, procedirem a analitzar si hi ha valors extrems en les variables numèriques en les quals els possibles valors no estiguin acotats (com per exemple output, on només pot valdre 0 o 1).
 
-Així doncs, ara observarem un resum estadístic del conjunt:
-
-
-```{r}
-summary(heart)
-```
+Per a detectar outliers, mostrarem un gràfic de dispersió, el qual marcarà els possibles valors extrems i, a més, ens permetrà conèixer quina és la dispersió entre els diferents valors.
 
 
-Mitjançant un gràfic mostrarem els valors extrems de cada columna:
+Mitjançant el següent gràfic mostrarem els valors extrems de cada columna:
 
 ```{r message=FALSE, warning=FALSE}
 meltData <- melt(heart)
@@ -106,7 +149,44 @@ plt <- ggplot(meltData, aes(factor(variable), value))
 plt + geom_boxplot() + facet_wrap(~variable, scale="free") + labs(x = "Heart outliers", y = "value")
 ```
 
-**Pendent de qué fem amb els outliers
+
+
+- Age: Observem que no hi ha outliers, la mitjana es troibatroba als 55 anys i on trobem més registres és entre 47 i 62 anys.
+
+- trtbps: Recordem que aquesta variable indica la pressió arterial en repòs. En aquest cas, es detecten alguns possibles valors extrems per sobre de 170. Tot i així, no ho considerarem com a outlier, doncs és possible que una persona tingui una pressió arterial de 200, tot i que pot ser un indicador de problemes mèdics de la persona.
+
+- chol: En aquest cas, observem un registre que podriem considerar com a outlier, doncs un valor de 600 de colesterol és molt atípic. La resta de valors considerats com a extrems, no els considerarem outliers, doncs tot i que és un risc, un valor de 400 de colesterol pot ser correcte.
+
+Per tant, eliminem els registres del dataset que tinguin un nivell de colesterol superior a 500:
+
+
+```{r}
+heart <- heart[heart$chol < 500, ]
+```
+
+
+thalachh: Per a la freqüència cardíaca màxima no detectem outliers, doncs és normal que aquesta es trobi entre 90 i 200. Veiem un registre que té un valor proper a 75, tot i que ho considerarem correcte i no l'exclourem.
+
+
+Finalment, procedirem a crear nous atributs al dataset a partir dels ja existents. En aquest cas, trobem que hi ha una sèrie de variables que tot i ser de tipus enter, el seu contingut és categòric. Per exemple, cp indica si el pacient sent algun dolor al pit, però els seus possibles valors no tenen cap ordre, sino que cada enter indica un dolor al pit diferent. El mateix succeeix amb restecg
+
+Així doncs, crearem dues variables noves, que tindran el mateix nom però amb el sufix "_cat", que contindran aquestes variables trasformades a factors:
+
+```{r}
+heart$cp_cat <- cut(heart$cp, 4, labels=c('AnginaTipica', 'AnginaAtipica', 'SenseAngina', 'Asimptomatic'))
+heart$restecg_cat <- cut(heart$restecg, 3, labels=c('Normal', 'WaveAbnormality', 'Hypertrophy'))
+```
+
+Per últim, i per facilitar les anàlisis posteriors, també transformarem a factor la variable sex:
+
+```{r}
+heart$sex_cat <- cut(heart$sex, 2, labels=c('F', 'M'))
+
+```
+
+
+
+
 
 
 
@@ -114,22 +194,197 @@ Finalment, ho resumir en aquesta taula:
 
 | Característiques 	|                            Definició                            	|   Tipus  	|                                         Valor                                         	|
 |:----------------:	|:---------------------------------------------------------------:	|:--------:	|:-------------------------------------------------------------------------------------:	|
-|       edat       	|                     Edat del pacient en anys                    	|  Numèric 	|                                         29-77                                         	|
-|       sexe       	|                              Gènere                             	| Nominals 	|                                (0) femení, (1) masculí                                	|
-|        cp        	|                      Tipus de dolor al pit                      	| Nominals 	|     (0) angina típica, (1) angina atípica, (2) dolor no anginós, (3) asimptomàtic     	|
-|     trestbps     	|                Pressió arterial en repòs en mmHg                	|  Numèric 	|                                         94-200                                        	|
-|        col       	|                    Colesterol sèric en mg/dl                    	|  Numèric 	|                                        126-564                                        	|
-|        fbs       	|            Sucre en sang en dejú superior a 120 mg/dl           	| Nominals 	|                                 (0) Fals (1) Veritable                                	|
-|      restecg     	|             Resultats electrocardiogràfics en repòs             	| Nominals 	| (0)normal, (1)anormalitat de l'ona ST-T, (2)probable hipertròfia ventricular esquerre 	|
-|       talac      	|              Freqüència cardíaca màxima aconseguida             	|  Numèric 	|                                        71 –202                                        	|
-|       exang      	|               Angina de pit induïda per l'exercici              	| Nominals 	|                                       (0)No(1)Sí                                      	|
-|     vell cim     	| Depressió del ST induïda per l'exercici en relació amb el repòs 	|  Numèric 	|                                       -2,6 - 6,2                                      	|
-|      pendent     	|          El pendent del segment ST de l'exercici màxim          	| Nominals 	|                       (1) en pendent, (2) plana, (3) en pendent                       	|
-|        ca        	|       Nombre de vasos principals acolorits per fluorosopia      	| Nominals 	|                                       0, 1, 2, 3                                      	|
-|       thal       	|                            Talassèmia                           	| Nominals 	|                   (3)normal, (6)defecte fixat, (7)defecte reversible                  	|
-|     objectiu     	|                 Diagnòstic de malalties del cor                 	| Nominals 	|            (0) malaltia cardíaca no present, (1) malaltia cardíaca present            	|
+|       age       	|                     Edat del pacient en anys                    	|  Enter 	|                                         29-77                                         	|
+|       sex_cat       	|                              Gènere                             	| Factor 	|                                (0) femení, (1) masculí                                	|
+|        cp_cat        	|                      Tipus de dolor al pit                      	| Factor 	|     (0) angina típica, (1) angina atípica, (2) dolor no anginós, (3) asimptomàtic     	|
+|     trestbps     	|                Pressió arterial en repòs en mmHg                	|  Enter 	|                                         94-200                                        	|
+|        chol       	|                    Colesterol sèric en mg/dl                    	|  Enter 	|                                        126-564                                        	|
+|        fbs       	|            Sucre en sang en dejú superior a 120 mg/dl           	| Enter 	|                                 (0) Fals (1) Veritable                                	|
+|      restecg_cat     	|             Resultats electrocardiogràfics en repòs             	| Factor 	| (0)normal, (1)anormalitat de l'ona ST-T, (2)probable hipertròfia ventricular esquerre 	|
+|       thalachh      	|              Freqüència cardíaca màxima aconseguida             	|  Enter 	|                                        71 –202                                        	|
+|       exang      	|               Angina de pit induïda per l'exercici              	| Enter 	|                                       (0)No(1)Sí                                      	|
+|     oldpeak     	| Depressió del ST induïda per l'exercici en relació amb el repòs 	|  Numèric 	|                                       0-6,2                                      	|
+|      slp     	|          El pendent del segment ST de l'exercici màxim          	| Enter 	|                       0-2                       	|
+|        caa        	|       Nombre de vasos principals acolorits per fluorosopia      	| Enter 	|                                       0-4                                      	|
+|       thall       	|                            Taxa de talassèmia                           	| Enter 	|                   0-3                  	|
+|     output     	|                 Diagnòstic de malalties del cor                 	| Enter 	|            (0) malaltia cardíaca no present, (1) malaltia cardíaca present            	|
 
 
-# EDA
+
+
+
+# Cració dels sets d'entrenament i test
+
+Seguidament, generarem un set de dades d'entrenament, el qual contindrà el 80% dels registres, i un set de test, per a validar el model construit a partir de les dades d'entrenament.
+
+Considerem que és important, però, que la variable a predir, es trobi en la mateixa proporció entre el dataset d'entrenament i de test, per tal de no obtenir un model esbiaixat. Per a fer-ho, utilitzarem la funció  createDataPartition (de la llibreria caret), la qual permet assegurar que, en fer les particions, tinguem la mateixa proporció de la variable objectiu en ambdos datasets.
+
+Així doncs, executarem la funcó esmentada, passant com a paràmetre output (variable que volem predir), i una proporció de 0.8, doncs volem que el conjunt d'entrenament contingui el 80% dels registres. La funció retornarà uns índexos, amb els quals crearem els sets d'entrenament i test:
+
+
+
+
+
+
+
+
+```{r}
+library('caret')
+
+set.seed(123)
+
+trainIndex <- createDataPartition(heart$output, p = .8,
+                                  list = FALSE,
+                                  times = 1)
+
+
+train <- heart[ trainIndex,]
+test <- heart[-trainIndex,]
+
+```
+
+
+
+Un cop feta la creació dels dos nous conjunts, validarem que, efectivament el d'entrenament contingui el 80% dels registres, i que els dos tinguin la mateixa proporció de registres amb valor d'opuput = 1:
+
+
+
+```{r}
+cat(paste("El set d'entrenament té ", toString(nrow(train)), "registres, i el de test ", toString(nrow(test)),". Per tant, el d'entrenament conté el ", toString(100 * nrow(train)/(nrow(train) + nrow(test))) , "% dels registres."))
+
+
+cat(paste("\nEl set d'entrenament té ", toString(nrow(train[train$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(train[train$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(train[train$output == 1,])/(nrow(train[train$output == 1,]) + nrow(train[train$output == 0,]))) , "% de pacients que han patit un atac de cor."))
+
+
+cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(test[test$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(test[test$output == 1,])/(nrow(test[test$output == 1,]) + nrow(test[test$output == 0,]))) , "% de pacients que han patit un atac de cor"))
+```
+
+
+
+# Models generats
+
+Un cop tenim el dataset net i subdividit en entrenament i test, procedirem a crear diferents models per tal de predir la variable resultat "output". Per tant, l'objectiu serà obtenir un o varis models eficaços que permetin predir si un pacient és propens a patir un atac de cor o no.
+
+##Model de regressió logística
+
+Donat que la variable a predir (output) conté una informació binària (1 = propens a patir un atac de cor; 0 = no propens a patir un atac de cor), el primer model que crearem serà una regressió logística, la qual permet predir una variable dicotòmica.
+
+En primera instància, inclourem totes les variables independents possibles, per tal de poder analitzar si totes elles són significatives o no. Així doncs, generem el model_glm_1 i en mostrem el seu summary:
+
+```{r}
+model_glm_1 <- glm(output~age+sex_cat+cp_cat+trtbps+chol+fbs+restecg_cat+thalachh+exng+oldpeak+slp+caa+thall, data=train, family = binomial)
+summary(model_glm_1)
+
+```
+
+
+Del resultat obtingut, ens centrem en el p-valor de cada variable. Si aquest supera 0.05, podrem dir amb un 95% de confiança que la variable no és significativa. Recordem que una variable no-significativa és aquella que no té cap afectació sobre la variable dependent, generant per aquest atribut una recta de pendent zero en el model que no aporta cap informació.
+
+Observem que hi ha una gran quantitat de variables que superen 0.05 de p-valor: age, trtbps, chol, fbs, restecg_cat, thalachh, exng i slp
+
+Així doncs, aquestes variables són candidates a ser excloses del model final.
+
+
+Tot seguit, procedim a analitzar les Odds-Ratio de cada variable, les quals poden prendre els següent valors:
+
+Odd-Ratio proper a 1: Indica que no hi ha relació entre la covariable i la variable independent (output).
+
+Odd-Ratio superior a 1: Es tracta d'un factor de risc, doncs si aquesta covariable està present, el succés (és  adir, que el pacient pateixi un atac de cor) és més probable.
+
+Odd-Ratio inferior a 1: Es tracta d'un factor de protecció, doncs si aquesta covariable està present, el succés serà menys probable.
+
+Per a calcular les Odd-Ratio utilitzem la funció coef():
+```{r}
+exp(coef(model_glm_1))
+```
+
+Del resultat obtingut podem extreure les següents conclusions:
+
+
+Les variables age, trtbps, chol, fbs, restecg_cat, thalachh, exng i slp tenen uns valors propers a 1, fet que indicaria que no tenen afectació sobre el succés a predir. Aquest resultat l'hem obtingut amb la anàlisi prèvia, on hem vist que no eren significants.
+
+Les variables sex, caa i thall són factors de protecció. Un valor baix en aquestes variables afecta en que sigui més probable l'atac de cor. Això vol dir que si el pacient és dona, té pocs vasos cardíacs principals i té una taxa de talessèmia baixa, tindrà més probabilitats de patir una malaltia cardíaca. 
+
+La variable cp és un factor de risc. Un valor elevat en aquesta variable fa que sigui més probable l'atac de cor. Aquesta variable, però, recordem que tot i que sigui de tipus enter té un significat categòric, doncs cada valor indica un tipus diferent de de dolor al pit. 
+
+
+Ara, generarem un nou model de regressió logística utilitzant només les variables significatives, és a dir: sex_cat, cp_cat, caa i thall.
+
+```{r}
+model_glm_2 <- glm(output~sex_cat+cp_cat+caa+thall, data=train, family = binomial)
+summary(model_glm_2)
+```
+Un cop tenim un model amb les variables més òptimes, procedim a executar-lo amb el subconjunt de dades de test:
+
+
+
+```{r}
+# Carreguem a testX, les variables que utilitzem com a independents del set de test
+testX <- test[c("age","sex_cat","cp_cat","trtbps","chol","fbs","restecg_cat","thalachh","exng","oldpeak","slp","caa","thall")]
+
+# Carreguem a testy, la variable que utilitzem com a dependent del set de test
+testY <- test[c("output")]
+
+
+predicted_model<- predict( model_glm_2, test)
+
+```
+
+Donat que un model de regressió logística genera un nombre entre 0 i 1 corresponent a la probabilitat del succés, prenem la següent decisió: els valors iguals o superiors a 0.5 els considerarem com a 1, és a dir, com a possible malaltia cardíaca. Els inferiors a 0.5 els considerarem com a 0:
+```{r}
+
+# Assigment el valor 1 si el valor predit és de 0.5 o superior. Altrament assignem el valor 0.
+predicted_model[predicted_model >= 0.5] <- 1
+predicted_model[predicted_model < 0.5] <- 0
+
+```
+
+Tot seguit, i per analitzar com de bo és el model generat, en mostrem la matriu de confusió:
+
+```{r}
+# Mostrem la matriu de confusió
+CrossTable(test$output, predicted_model,prop.chisq  = FALSE, prop.c = FALSE, prop.r =FALSE,dnn = c('Reality', 'Prediction'))
+```
+
+
+Observem que el model generat ha predit correctament 46 dels 60 registres (77,7%).
+
+Ara, procedim a calcular-ne l'especifitat i la sensibilitat.
+
+L’especificitat indica la proporció dels registres negatius que s'han classificat correctament respecte tots els registres negatius. És a dir, la proporció de pacients sense malaltia cardíaca que s'han classificat bé, respecte el total de pacients sense malaltia cardíaca:
+
+```{r}
+resultat_model = data.frame(output=test$output, output_calculat = predicted_model)
+
+
+cat(paste("El model té una especificitat de ", toString(nrow(resultat_model[resultat_model$output==0 & resultat_model$output_calculat==0,])/
+nrow(resultat_model[resultat_model$output==0,])) ))
+
+```
+
+Per altra banda, la sensibilitat indica la proporció dels registres classificats correctament amb malaltia cardíaca respecte els que realment tenien una malaltia cardíaca. 
+
+```{r}
+cat(paste("El model té una sensibilitat de ", toString(nrow(resultat_model[resultat_model$output==1 & resultat_model$output_calculat==1,])/
+nrow(resultat_model[resultat_model$output==1,])) ))
+
+
+```
+
+
+
+
+
+
+
+
+```{r}
+#test
+#if (!require('corrplot')) install.packages('corrplot'); library('corrplot')
+
+#corrplot(cor(heart), method = 'color', tl.col = 'black') 
+```
+
+
 
 

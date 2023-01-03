@@ -34,8 +34,11 @@ if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
 if (!require('tidyr')) install.packages('tidyr'); library('tidyr')
 if (!require('reshape2')) install.packages('reshape2'); library('reshape2')
 if (!require('corrplot')) install.packages('corrplot'); library('corrplot')
-if(!require(gmodels)) install.packages('gmodels', repos='http://cran.us.r-project.org');library(gmodels)
-
+if (!require('randomForest')) install.packages('randomForest'); library('randomForest')
+if (!require('rminer')) install.packages('rminer'); library('rminer')
+if (!require('caret')) install.packages('caret'); library('caret')
+if (!require('pROC')) install.packages('pROC'); library('pROC')
+if(!require('gmodels')) install.packages('gmodels', repos='http://cran.us.r-project.org');library('gmodels')
 ```
 
 
@@ -229,15 +232,11 @@ Així doncs, executarem la funcó esmentada, passant com a paràmetre output (va
 
 
 ```{r}
-library('caret')
-
 set.seed(123)
 
 trainIndex <- createDataPartition(heart$output, p = .8,
                                   list = FALSE,
                                   times = 1)
-
-
 train <- heart[ trainIndex,]
 test <- heart[-trainIndex,]
 
@@ -483,10 +482,51 @@ nrow(resultat_model[resultat_model$output==1,])) ))
 
 
 
+## Random Forest
 
 
+A continuació, per comparar amb el model anterior en concepte de rendiment, mostrarem un exemple d’aplicació d’un model random forest al conjunt de dades sobre el dataset original, mitjançant una validació creuada amb 4 folds on es divideixen les dades en entrenament i test per només aplicar l’entrenament mitjançant validació creuada al primer subconjunt. Posteriorment, mitjançant la funció predict() es prediu el resultat de les dades del subconjunt de test i es representen les diferents mesures de bondat del model, mitjançant la funció confusionMatrix(), especificant com a positius els casos d'infarts.
+
+```{r}
+set.seed(123)
+heart_num <- heart[complete.cases(heart),c(-17,-16,-15)]
+h<-holdout(heart_num$output, ratio=2/3,mode="stratified")
+data_train<-heart_num[h$tr,]
+data_train$output <- as.factor(data_train$output)
+data_test<-heart_num[h$ts,]
+data_test$output <- as.factor(data_test$output)
+
+```
+
+Volem analitzar quines són les variables més contributives sobre el model Random Forest: 
+```{r}
+model <- randomForest(output~., data=data_train)
+model$importance
+```
+
+Escollirem les següents variables predictores amb més pes: 
+age+sex+cp+trtbps+chol+thalachh+exng+oldpeak+slp+caa+thall
 
 
+```{r}
+train_control<- trainControl(method="cv", number=4)
+mod<-train(output~age+sex+cp+trtbps+chol+thalachh+exng+oldpeak+slp+caa+thall, data=data_train, method="rf", trControl = train_control)
+pred <- predict(mod, newdata=data_test)
+CrossTable(data_test$output, pred, prop.chisq  = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c('Reality', 'Prediction'))
+confusionMatrix(pred,data_test$output, positive="1")
+```
+Observem que el model generat ha predit correctament 84 dels 101 registres (83,2%).
+
+Per una banda, tenim una sensibilitat del 85.5% i, per l'altra banda, una especificitat de 80%, en conseqüència,
+en tenim una  precisió equilibrada de 83% on s'ajusta a un bon rendiment de model. A més, fem un gràfic per assegurar-nos de la qualitat d'aquest model:
+
+```{r message=FALSE, warning=FALSE}
+roc <- roc(as.numeric(data_test$output),as.numeric(pred))
+plot(roc,col="red",lwd=2,main="ROC test")
+legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
+```
+
+Finalment, obtenem una performance de 0.8294 que ens informa d'un valor diagnòstic positiu.
 
 
 

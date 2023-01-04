@@ -479,7 +479,7 @@ Per una banda, realitzarem un contrast de mitjanes per tal de saber si hi ha dif
 
 També, analitzarem les correlacions entre els diferents atributs del dataset "heart" del que disposem.
 
-Per últim, crearem un model de regressió logística per tal de predir les possibilitats d'atac de cor d'un pacient.
+Per últim, crearem udos models supervisats, un de regressió logística i l'altra de Random Forest, per tal de predir les possibilitats d'atac de cor d'un pacient.
 
 
 

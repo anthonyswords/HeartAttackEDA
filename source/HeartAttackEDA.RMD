@@ -66,7 +66,7 @@ Els atributs dels que disposem són:
 
 * **edat:** Edat del pacient (enter)
 * **sex:** Sexe del pacient. Després d'investigar el dataset, arribem a la conclusió que el valor 1 indica que és home i el 0 que és dona. (enter)
-* **cp:** tipus de dolor de pit tipus de dolor de pit (enter)
+* **cp:** tipus de dolor de pit(enter)
   * Valor 1: angina típica
   * Valor 2: angina atípica
   * Valor 3: dolor no anginós
@@ -74,7 +74,7 @@ Els atributs dels que disposem són:
 * **trtbps:** pressió arterial en repòs (en mm Hg) (enter)
 * **chol:** colestoral en mg/dl obtingut mitjançant el sensor IMC (enter)
 * **fbs:** (sucre en sang en dejú > 120 mg/dl) (1 = cert; 0 = fals) (enter)
-* **rest_ecg:** resultats electrocardiogràfics en repòs (enter)
+* **restecg:** resultats electrocardiogràfics en repòs (enter)
   * Valor 0: normal
   * Valor 1: amb anormalitat de l'ona ST-T (inversions de l'ona T i/o elevació o depressió ST > 0,05 mV)
   * Valor 2: mostra una hipertròfia ventricular esquerra probable o definitiva segons els criteris d'Estes
@@ -171,7 +171,7 @@ heart <- heart[heart$chol < 500, ]
 thalachh: Per a la freqüència cardíaca màxima no detectem outliers, doncs és normal que aquesta es trobi entre 90 i 200. Veiem un registre que té un valor proper a 75, tot i que ho considerarem correcte i no l'exclourem.
 
 
-Finalment, procedirem a crear nous atributs al dataset a partir dels ja existents. En aquest cas, trobem que hi ha una sèrie de variables que tot i ser de tipus enter, el seu contingut és categòric. Per exemple, cp indica si el pacient sent algun dolor al pit, però els seus possibles valors no tenen cap ordre, sino que cada enter indica un dolor al pit diferent. El mateix succeeix amb restecg
+Finalment, procedirem a crear nous atributs al dataset a partir dels ja existents. En aquest cas, trobem que hi ha una sèrie de variables que tot i ser de tipus enter, el seu contingut és categòric. Per exemple, cp indica si el pacient sent algun dolor al pit, però els seus possibles valors no tenen cap ordre, sinó que cada enter indica un dolor al pit diferent. El mateix succeeix amb restecg
 
 Així doncs, crearem dues variables noves, que tindran el mateix nom però amb el sufix "_cat", que contindran aquestes variables trasformades a factors:
 
@@ -184,12 +184,7 @@ Per últim, i per facilitar les anàlisis posteriors, també transformarem a fac
 
 ```{r}
 heart$sex_cat <- cut(heart$sex, 2, labels=c('F', 'M'))
-
 ```
-
-
-
-
 
 
 
@@ -213,7 +208,229 @@ Finalment, ho resumir en aquesta taula:
 |     output     	|                 Diagnòstic de malalties del cor                 	| Enter 	|            (0) malaltia cardíaca no present, (1) malaltia cardíaca present            	|
 
 
+## EDA
 
+Farem una breu exploració visual de les diferents columnes mostrades anteriorment. Subdividirem aquest apartat en dos grups de variables a analitzar: les categòriques i numèriques.
+
+### Variables categòriques
+
+
+```{r}
+mosaicplot(sex_cat ~ output, data = heart,
+           main="Malaltia cardíaca per gènere", color = c("gray", "darkred"),
+           xlab="Gènere", ylab="Malaltia cardíaca")
+```
+
+Hi ha més pacients de gènere masculí que del femení i, a més, han patit menys la diagnosi positiu de la malaltia que el sector femení, segons la distribució anterior.
+
+Analitzem la distribució de la columna del dolor de pit:
+```{r}
+ylim <- c(0, 1.25*max(table(heart$cp_cat)))
+bar_cp <- barplot(table(heart$cp_cat), main="Chest Pain dist", col="lightblue", ylim = ylim)
+```
+Existeix més freqüència en angina típica que la resta.
+
+
+
+Analitzem el diagnòstic de la malaltia cardíaca per Chest pain:
+
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = cp_cat)) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per Chest pain",
+       x = "Diagnòstic Malaltia cardíaca",
+       y = "chest pain") +
+  theme_test()
+```
+S'observa una reducció d'angina típica quan es tracta d'un atac de cor
+
+
+
+Analitzem la distribució del Resting Electrocardiographic:
+```{r}
+ylim <- c(0, 1.5*max(table(heart$restecg_cat)))
+bar_cp <- barplot(table(heart$restecg_cat), main="Resting Electrocardiographic dist", col="lightblue", ylim = ylim)
+```
+La distribució de freq en el valor de Hypertrophy és notablement inferior a la resta.
+
+Analitzem el diagnòstic de la malaltia cardíaca per restecg:
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = restecg_cat)) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per Resting Electrocardiographic",
+       x = "Diagnòstic de la malaltia cardíaca",
+       y = "restecg_cat") +
+  theme_test()
+```
+Hi ha una lleugera pujada d'onada arrítmica quan es tracta d'un infart respecte d'aquells que no.
+
+
+
+Analitzem la freqüència del nivell de sucre en sang en dejú:
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$fbs))))
+bar_cp <- barplot(table(as.factor(heart$fbs)), main="Fasting blood sugar dist", col="lightblue", ylim = ylim, names = c('< 120 mg/dl', '> 120 mg/dl'))
+
+```
+Hi ha una major freqüència  de registres amb < 120 mg/dk
+
+Analitzem el diagnòstic de la malaltia cardíaca per FBS:
+```{r message=FALSE, warning=FALSE}
+ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(fbs))) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per fasting blood sugar",
+       x = "Diagnòstic Malaltia cardíaca",
+       y = "Fasting Blood Sugar") +
+  scale_fill_manual(values=c("#F4C2C2", '#FF5C5C'), 
+                       name="Fasting Blood Sugar",
+                       labels=c('< 120 mg/dl', '> 120 mg/dl'))+
+  theme_test()
+```
+No hi ha aprecacions apreciacions notòries segons per la malaltia en vers al nivell de sucre en sang.
+
+
+
+Analitzem la distribució de l'angina induïda per l'exercici:
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$exng))))
+bar_cp <- barplot(table(as.factor(heart$exng)), main="Exercise Induced Angina Distribution", col="lightblue", ylim = ylim, names = c('False - 0', 'True - 1'))
+```
+
+Analitzem el diagnòstic de la malaltia cardíaca per exng:
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(exng))) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per Exercise Induced Angina",
+       x = "Diagnòstic de la malaltia cardíaca",
+       y = "Exercise Induced Angina") +
+  theme_test()
+```
+La majoria de casos en el que hi ha la malaltia no hi ha presència d'angina de pit induïda per l'exercici, en canvi, quan no hi ha presència de malaltia es mostra un equilibri d'aquesta.
+
+
+
+Analitzem el desplaçament del segment ST en relació amb els increments de la freqüència cardíaca induïts per l'exercici:
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$slp))))
+bar_cp <- barplot(table(as.factor(heart$slp)), main="Slope of the Peak Exercise Distribution", col="lightblue", ylim = ylim)
+```
+Predomina el valor 1 i 2.
+
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(slp))) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per Slope of the Peak Exercise",
+       x = "Diagnòstic de la malaltia cardíaca",
+       y = "Slope of the Peak Exercise") +
+  theme_test()
+```
+En cas de malaltia, predomina el valor 2, en cas contrari, predomina el valor 1
+
+
+Analitzem la distribució del nombre de vasos principals:
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$caa))))
+bar_cp <- barplot(table(as.factor(heart$caa)), main="Nombre de vasos principals acolorits per fluorosopia", col="lightblue", ylim = ylim)
+```
+El número 0 és el predominant i els següents van disminuint la seva representació de forma gradual.
+
+Analitzem el diagnòstic de la malaltia cardíaca per caa:
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(caa))) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per nombre de vasos principals",
+       x = "Diagnòstic de la malaltia cardíaca",
+       y = "Nombre de vasos principals") +
+  theme_test()
+```
+En cas de malaltia, predomina el número 0, en cas contrari, hi ha una equilibri relatiu.
+
+
+
+Analitzem la columna 'thall':
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$thall))))
+bar_cp <- barplot(table(as.factor(heart$thall)), main="'thall' Distribution", col="lightblue", ylim = ylim)
+```
+Hi ha una ínfima representació del número 0.
+
+Analitzem el diagnòstic de la malaltia cardíaca per thall
+```{r}
+ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(thall))) + 
+  geom_bar(position = "fill") +
+  labs(title = "Diagnòstic de la malaltia cardíaca per 'thall'",
+       x = "Diagnòstic de la malaltia cardíaca",
+       y = "thall") +
+  theme_test()
+```
+Extraiem un insight molt representatiu: aquells que pateixen la malaltia predomina el valor 2 de "thall", en canvi, d'aquells que no predomina el valor 3.
+
+
+
+Per finalitzar aquesta secció:
+```{r}
+ylim <- c(0, 1.5*max(table(as.factor(heart$output))))
+bar_cp <- barplot(table(as.factor(heart$output)), main="Target 'output' distribution", col="darkblue", ylim = ylim)
+
+```
+La columna objectiu 'output' està força equilibrada.
+
+
+
+### Variables numèriques
+
+Aquesta secció mostrarà la distribució i densitat de variables numèriques en histogrames:
+
+```{r}
+ggplot(heart, aes(x=age, y =..density..)) +
+  geom_histogram(alpha=0.5, position="identity", bins = 30, fill  = "darkviolet")+
+  geom_vline(aes(xintercept = mean(age)), linetype="dashed")+
+  labs(title="Histograma de l'edat del pacient", 
+       x="Total", y="Edat")+
+  geom_density(alpha=0.6, adjust = 2.25)
+```
+Simètric amb tendència a tenir asimteria negativa.
+
+```{r}
+ggplot(heart, aes(x=trtbps, y =..density..)) +
+  geom_histogram(alpha=0.5, position="identity", bins = 20, fill  = "darkviolet")+
+  geom_vline(aes(xintercept = mean(trtbps)), linetype="dashed")+
+  labs(title="Histograma del 'Resting Blood Pressure Column'", 
+       x="Resting Blood Pressure", y="Total")+
+  geom_density(alpha=0.6, adjust = 1.75)
+```
+Simètric
+
+```{r}
+ggplot(heart, aes(x=chol, y =..density..)) +
+  geom_histogram(alpha=0.5, position="identity", bins = 30, fill  = "darkviolet")+
+  geom_vline(aes(xintercept = mean(chol)), linetype="dashed")+
+  labs(title="Histograma del colesterol", 
+       x="Colesterol", y="Total")+
+  geom_density(alpha=0.6, adjust = 1.5)
+```
+Simètric, però amb tendència a tenir asimetria positiva.
+
+```{r}
+ggplot(heart, aes(x=thalachh, y =..density..)) +
+  geom_histogram(alpha=0.5, position="identity", bins = 40, fill  = "darkviolet")+
+  geom_vline(aes(xintercept = mean(thalachh)), linetype="dashed")+
+  labs(title="Histograma de la màxima freqüència cardíaca", 
+       x="Ratio de la màxima freqüència cardíaca", y="Total")+
+  geom_density(alpha=0.6, adjust = 1.5)
+```
+Asimetria negativa
+
+
+```{r}
+ggplot(heart, aes(x=oldpeak, y =..density..)) +
+  geom_histogram(alpha=0.5, position="identity", bins = 20, fill  = "darkviolet")+
+  geom_vline(aes(xintercept = mean(oldpeak)),linetype="dashed")+
+  labs(title="Histograma del 'oldpeak' Column", 
+       x="'Oldpeak'", y="Total")+
+  geom_density(alpha=0.6, adjust = 0.5)
+```
+Distribució asimètrica totalment positiva
 
 
 # Cració dels sets d'entrenament i test
@@ -223,11 +440,6 @@ Seguidament, generarem un set de dades d'entrenament, el qual contindrà el 80% 
 Considerem que és important, però, que la variable a predir, es trobi en la mateixa proporció entre el dataset d'entrenament i de test, per tal de no obtenir un model esbiaixat. Per a fer-ho, utilitzarem la funció  createDataPartition (de la llibreria caret), la qual permet assegurar que, en fer les particions, tinguem la mateixa proporció de la variable objectiu en ambdos datasets.
 
 Així doncs, executarem la funcó esmentada, passant com a paràmetre output (variable que volem predir), i una proporció de 0.8, doncs volem que el conjunt d'entrenament contingui el 80% dels registres. La funció retornarà uns índexos, amb els quals crearem els sets d'entrenament i test:
-
-
-
-
-
 
 
 
@@ -264,7 +476,7 @@ cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "reg
 
 Un cop tenim el dataset net i subdividit en entrenament i test, procedirem a realitzar diferents anàlisis i crear diferents models per predir informació relacionada amb el dataset.
 
-Per una banda, realitzarem un contrast de mitjanes per tal de saber si hi ha diferències entre la possibilitat 'un atac de cor entre homes i dones.
+Per una banda, realitzarem un contrast de mitjanes per tal de saber si hi ha diferències entre la possibilitat d'un atac de cor entre homes i dones.
 
 També, analitzarem les correlacions entre els diferents atributs del dataset "heart" del que disposem.
 
@@ -515,7 +727,7 @@ pred <- predict(mod, newdata=data_test)
 CrossTable(data_test$output, pred, prop.chisq  = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c('Reality', 'Prediction'))
 confusionMatrix(pred,data_test$output, positive="1")
 ```
-Observem que el model generat ha predit correctament 84 dels 101 registres (83,2%).
+Observem que el model generat ha predit correctament 84 dels 101 registres (~83,2%).
 
 Per una banda, tenim una sensibilitat del 85.5% i, per l'altra banda, una especificitat de 80%, en conseqüència,
 en tenim una  precisió equilibrada de 83% on s'ajusta a un bon rendiment de model. A més, fem un gràfic per assegurar-nos de la qualitat d'aquest model:

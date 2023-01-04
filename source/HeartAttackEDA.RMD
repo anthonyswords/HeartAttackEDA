@@ -154,7 +154,7 @@ plt + geom_boxplot() + facet_wrap(~variable, scale="free") + labs(x = "Heart out
 
 
 
-- Age: Observem que no hi ha outliers, la mitjana es troibatroba als 55 anys i on trobem més registres és entre 47 i 62 anys.
+- Age: Observem que no hi ha outliers, la mitjana es troiba als 55 anys i on trobem més registres és entre 47 i 62 anys.
 
 - trtbps: Recordem que aquesta variable indica la pressió arterial en repòs. En aquest cas, es detecten alguns possibles valors extrems per sobre de 170. Tot i així, no ho considerarem com a outlier, doncs és possible que una persona tingui una pressió arterial de 200, tot i que pot ser un indicador de problemes mèdics de la persona.
 
@@ -162,13 +162,12 @@ plt + geom_boxplot() + facet_wrap(~variable, scale="free") + labs(x = "Heart out
 
 Per tant, eliminem els registres del dataset que tinguin un nivell de colesterol superior a 500:
 
-
 ```{r}
 heart <- heart[heart$chol < 500, ]
 ```
 
 
-thalachh: Per a la freqüència cardíaca màxima no detectem outliers, doncs és normal que aquesta es trobi entre 90 i 200. Veiem un registre que té un valor proper a 75, tot i que ho considerarem correcte i no l'exclourem.
+- thalachh: Per a la freqüència cardíaca màxima no detectem outliers, doncs és normal que aquesta es trobi entre 90 i 200. Veiem un registre que té un valor proper a 75, tot i que ho considerarem correcte i no l'exclourem.
 
 
 Finalment, procedirem a crear nous atributs al dataset a partir dels ja existents. En aquest cas, trobem que hi ha una sèrie de variables que tot i ser de tipus enter, el seu contingut és categòric. Per exemple, cp indica si el pacient sent algun dolor al pit, però els seus possibles valors no tenen cap ordre, sinó que cada enter indica un dolor al pit diferent. El mateix succeeix amb restecg

@@ -739,19 +739,24 @@ confusionMatrix(pred,data_test$output, positive="1")
 ```
 Observem que el model generat ha predit correctament 84 dels 101 registres (~83,2%).
 
-Per una banda, tenim una sensibilitat del 85.5% i, per l'altra banda, una especificitat de 80%, en conseqüència,
-en tenim una  precisió equilibrada de 83% on s'ajusta a un bon rendiment de model. A més, fem un gràfic per assegurar-nos de la qualitat d'aquest model:
+Per una banda, tenim una sensibilitat del 85.5% i, per l'altra banda, una especificitat de 80%, en conseqüència, en tenim una precisió equilibrada de 83% on s'ajusta a un bon rendiment de model. A més, fem un gràfic per assegurar-nos de la qualitat d'aquest model:
 
 ```{r message=FALSE, warning=FALSE}
 roc <- roc(as.numeric(data_test$output),as.numeric(pred))
 plot(roc,col="red",lwd=2,main="ROC test")
 legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
 ```
-
-Finalment, obtenem una performance de 0.8294 que ens informa d'un valor diagnòstic positiu.
-
+Finalitzem amb una performance de 0.8294 que ens informa d'un valor diagnòstic positiu.
 
 
 
+## Conclusions
 
-
+* Afirmem que, amb un nivell de confiança superior al 99%, hi ha diferències entre la possiblitat de patir un atac de cor entre homes i dones.
+* Les dones són més propenses a patir un infart que els homes.
+* Les variables age, trtbps, chol, fbs, restecg, thalachh, exng i slp no tenen afectació sobre el succés a predir.
+* Les variables sex, caa i thall són factors de protecció (un valor baix en aquestes variables afecta en que sigui més probable l'atac de cor).
+* La variable cp és un factor de risc (Un valor elevat en aquesta variable fa que sigui més probable l'atac de cor).
+* Tot i així, ens fixem que en valor absolut, tenim un nivell bastant baix de correlació entre les variables i el succés output.
+* Model GLM: 77,7% accuracy, especificitat de 0.75, sensibilitat de 0.78 i ROC de 0.77 .
+* Model RF: 83% accuracy, especificitat de 80%, sensibilitat de 0.83 i ROC de 0.83 .

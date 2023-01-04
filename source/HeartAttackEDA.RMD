@@ -213,14 +213,26 @@ Farem una breu exploració visual de les diferents columnes mostrades anteriorme
 
 ### Variables categòriques
 
+Dit això, podem extreure un primer insight del gènere i la variable target:
+```{r}
+female <- table(heart[heart$sex_cat=='F',]$output)
+male <- table(heart[heart$sex_cat=='M',]$output)
+combine <- rbind(female,male)
+colnames(combine) <- c("No han patit atac de cor", "Han patit atac de cor")
+rownames(combine) <- c("Dones", "Homes")
+print(combine)
+```
+Hi ha 71 dones de 95 que han diagnosticat malalties cardíaques i 92 homes de 206 van ser diagnosticats amb malaltia cardíaca. Això indica que el 75% de les dones d'aquest conjunt de dades tenen un diagnòstic de malaltia cardíaca, on només el 45% dels homes tenen un diagnòstic de malaltia cardíaca.
 
+Visualtizme amb un mosaic la relació proporcional entre les dues variables anteriors:
 ```{r}
 mosaicplot(sex_cat ~ output, data = heart,
            main="Malaltia cardíaca per gènere", color = c("gray", "darkred"),
            xlab="Gènere", ylab="Malaltia cardíaca")
 ```
 
-Hi ha més pacients de gènere masculí que del femení i, a més, han patit menys la diagnosi positiu de la malaltia que el sector femení, segons la distribució anterior.
+Observem que hi ha més número de gènere masculí on aquest pateix lleugerament menys atacs al cor respecta amb la dona.
+
 
 Analitzem la distribució de la columna del dolor de pit:
 ```{r}

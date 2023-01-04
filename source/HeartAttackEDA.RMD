@@ -49,7 +49,7 @@ En primer lloc, procedim a carregar a la variable "heart" el contingut del datas
 
 
 ```{r}
-heart <- read.csv("dataset/heart.csv")
+heart <- read.csv("./heart.csv")
 head(heart)
 ```
 
@@ -763,5 +763,5 @@ Finalitzem amb una performance de 0.8294 que ens informa d'un valor diagnòstic 
 
 
 ```{r}
-heart <- read.csv(heart, "dataset/HeartAttackAnalysis.csv")
+write.csv(heart, "HeartAttackAnalysis.csv")
 ```

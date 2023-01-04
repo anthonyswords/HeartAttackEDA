@@ -451,9 +451,6 @@ Seguidament, generarem un set de dades d'entrenament, el qual contindrà el 80% 
 Considerem que és important, però, que la variable a predir, es trobi en la mateixa proporció entre el dataset d'entrenament i de test, per tal de no obtenir un model esbiaixat. Per a fer-ho, utilitzarem la funció  createDataPartition (de la llibreria caret), la qual permet assegurar que, en fer les particions, tinguem la mateixa proporció de la variable objectiu en ambdos datasets.
 
 Així doncs, executarem la funcó esmentada, passant com a paràmetre output (variable que volem predir), i una proporció de 0.8, doncs volem que el conjunt d'entrenament contingui el 80% dels registres. La funció retornarà uns índexos, amb els quals crearem els sets d'entrenament i test:
-
-
-
 ```{r}
 set.seed(123)
 
@@ -465,12 +462,7 @@ test <- heart[-trainIndex,]
 
 ```
 
-
-
 Un cop feta la creació dels dos nous conjunts, validarem que, efectivament el d'entrenament contingui el 80% dels registres, i que els dos tinguin la mateixa proporció de registres amb valor d'opuput = 1:
-
-
-
 ```{r}
 cat(paste("El set d'entrenament té ", toString(nrow(train)), "registres, i el de test ", toString(nrow(test)),". Per tant, el d'entrenament conté el ", toString(100 * nrow(train)/(nrow(train) + nrow(test))) , "% dels registres."))
 
@@ -480,6 +472,13 @@ cat(paste("\nEl set d'entrenament té ", toString(nrow(train[train$output == 1,]
 
 cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(test[test$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(test[test$output == 1,])/(nrow(test[test$output == 1,]) + nrow(test[test$output == 0,]))) , "% de pacients que han patit un atac de cor"))
 ```
+
+```{r message=FALSE, warning=FALSE}
+roc <- roc(as.numeric(test$output),as.numeric(predicted_model))
+plot(roc,col="red",lwd=2,main="ROC test")
+legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
+```
+Finalment, obtenem una performance de 0.7656 que ens informa d'un valor diagnòstic positiu.
 
 
 

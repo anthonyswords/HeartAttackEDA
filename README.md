@@ -9,7 +9,6 @@ Aquesta projecte s'ha realitzat sota el context de l'assignatura Tipologia i cic
 ## Fitxers del codi font
 
 * **HeartAttackAnalysisPRA2.pdf**: Memòria PDF.
-* **requirements.txt**: llibreries i versions utilitzades
 * **source/**: carpeta modular on es localitza tot el codi font en llenguatge R.
 * **source/dataset**: carpeta modular on es localitza el dataset.
 * **source/dataset/heart.csv**: fitxer CSV del dataset original.

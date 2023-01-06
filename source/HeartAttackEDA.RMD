@@ -49,7 +49,7 @@ En primer lloc, procedim a carregar a la variable "heart" el contingut del datas
 
 
 ```{r}
-heart <- read.csv("./heart.csv")
+heart <- read.csv("./dataset/heart.csv")
 head(heart)
 ```
 
@@ -111,7 +111,7 @@ summary(heart)
 
 # Neteja de dades
 
-Tot seguit, procedirem a analitzar aquells registres que continguin valors buit o outliers amb la finalitat de corregir-los i deixar el dataset net per a poder ser utilitzat posteriorment.
+Tot seguit, procedirem a analitzar aquells registres que continguin valors buits o outliers amb la finalitat de corregir-los i deixar el dataset net per a poder ser utilitzat posteriorment.
 
 En primer lloc, mostrem quants valors buits (na) hi ha per a cada atribut:
 
@@ -144,7 +144,7 @@ Seguidament, procedirem a analitzar si hi ha valors extrems en les variables num
 Per a detectar outliers, mostrarem un gràfic de dispersió, el qual marcarà els possibles valors extrems i, a més, ens permetrà conèixer quina és la dispersió entre els diferents valors.
 
 
-Mitjançant el següent gràfic mostrarem els valors extrems de cada columna:
+Mitjançant el següent gràfic mostrarem la distribució dels valors de cada columna:
 
 ```{r message=FALSE, warning=FALSE}
 meltData <- melt(heart)
@@ -154,7 +154,7 @@ plt + geom_boxplot() + facet_wrap(~variable, scale="free") + labs(x = "Heart out
 
 
 
-- Age: Observem que no hi ha outliers, la mitjana es troiba als 55 anys i on trobem més registres és entre 47 i 62 anys.
+- Age: Observem que no hi ha outliers, la mitjana es troba als 55 anys i on trobem més registres és entre 47 i 62 anys.
 
 - trtbps: Recordem que aquesta variable indica la pressió arterial en repòs. En aquest cas, es detecten alguns possibles valors extrems per sobre de 170. Tot i així, no ho considerarem com a outlier, doncs és possible que una persona tingui una pressió arterial de 200, tot i que pot ser un indicador de problemes mèdics de la persona.
 
@@ -187,7 +187,7 @@ heart$sex_cat <- cut(heart$sex, 2, labels=c('F', 'M'))
 
 
 
-Finalment, ho resumir en aquesta taula:
+Finalment, ho podem resumir en aquesta taula:
 
 | Característiques 	|                            Definició                            	|   Tipus  	|                                         Valor                                         	|
 |:----------------:	|:---------------------------------------------------------------:	|:--------:	|:-------------------------------------------------------------------------------------:	|
@@ -224,14 +224,14 @@ print(combine)
 ```
 Hi ha 71 dones de 95 que han diagnosticat malalties cardíaques i 92 homes de 206 van ser diagnosticats amb malaltia cardíaca. Això indica que el 75% de les dones d'aquest conjunt de dades tenen un diagnòstic de malaltia cardíaca, on només el 45% dels homes tenen un diagnòstic de malaltia cardíaca.
 
-Visualtizme amb un mosaic la relació proporcional entre les dues variables anteriors:
+Visualtizem amb un mosaic la relació proporcional entre les dues variables anteriors:
 ```{r}
 mosaicplot(sex_cat ~ output, data = heart,
            main="Malaltia cardíaca per gènere", color = c("gray", "darkred"),
            xlab="Gènere", ylab="Malaltia cardíaca")
 ```
 
-Observem que hi ha més número de gènere masculí on aquest pateix lleugerament menys atacs al cor respecta amb la dona.
+Observem que hi ha més proporció de malaltia cardíaca en les dones, com ja havíem avançat prèviament.
 
 
 Analitzem la distribució de la columna del dolor de pit:
@@ -239,6 +239,7 @@ Analitzem la distribució de la columna del dolor de pit:
 ylim <- c(0, 1.25*max(table(heart$cp_cat)))
 bar_cp <- barplot(table(heart$cp_cat), main="Chest Pain dist", col="lightblue", ylim = ylim)
 ```
+
 Existeix més freqüència en angina típica que la resta.
 
 
@@ -253,7 +254,8 @@ ggplot(data = heart, aes(x = as.factor(output), fill = cp_cat)) +
        y = "chest pain") +
   theme_test()
 ```
-S'observa una reducció d'angina típica quan es tracta d'un atac de cor
+
+S'observa una reducció d'angina típica quan el registre correspon a un atac de cor
 
 
 
@@ -262,6 +264,7 @@ Analitzem la distribució del Resting Electrocardiographic:
 ylim <- c(0, 1.5*max(table(heart$restecg_cat)))
 bar_cp <- barplot(table(heart$restecg_cat), main="Resting Electrocardiographic dist", col="lightblue", ylim = ylim)
 ```
+
 La distribució de freq en el valor de Hypertrophy és notablement inferior a la resta.
 
 Analitzem el diagnòstic de la malaltia cardíaca per restecg:
@@ -273,6 +276,7 @@ ggplot(data = heart, aes(x = as.factor(output), fill = restecg_cat)) +
        y = "restecg_cat") +
   theme_test()
 ```
+
 Hi ha una lleugera pujada d'onada arrítmica quan es tracta d'un infart respecte d'aquells que no.
 
 
@@ -283,7 +287,8 @@ ylim <- c(0, 1.5*max(table(as.factor(heart$fbs))))
 bar_cp <- barplot(table(as.factor(heart$fbs)), main="Fasting blood sugar dist", col="lightblue", ylim = ylim, names = c('< 120 mg/dl', '> 120 mg/dl'))
 
 ```
-Hi ha una major freqüència  de registres amb < 120 mg/dk
+
+Hi ha una major freqüència  de registres amb < 120 mg/dk.
 
 Analitzem el diagnòstic de la malaltia cardíaca per FBS:
 ```{r message=FALSE, warning=FALSE}
@@ -297,7 +302,8 @@ ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(fbs))) +
                        labels=c('< 120 mg/dl', '> 120 mg/dl'))+
   theme_test()
 ```
-No hi ha aprecacions apreciacions notòries segons per la malaltia en vers al nivell de sucre en sang.
+
+No hi ha diferències significatives per la malaltia en vers al nivell de sucre en sang.
 
 
 
@@ -316,6 +322,7 @@ ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(exng))) +
        y = "Exercise Induced Angina") +
   theme_test()
 ```
+
 La majoria de casos en el que hi ha la malaltia no hi ha presència d'angina de pit induïda per l'exercici, en canvi, quan no hi ha presència de malaltia es mostra un equilibri d'aquesta.
 
 
@@ -325,7 +332,10 @@ Analitzem el desplaçament del segment ST en relació amb els increments de la f
 ylim <- c(0, 1.5*max(table(as.factor(heart$slp))))
 bar_cp <- barplot(table(as.factor(heart$slp)), main="Slope of the Peak Exercise Distribution", col="lightblue", ylim = ylim)
 ```
+
 Predomina el valor 1 i 2.
+
+Ara, analitzem com es distribueixen els valors d'slp en funció de si correspon a un pacient amb atac de cor o no.
 
 ```{r}
 ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(slp))) + 
@@ -335,6 +345,7 @@ ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(slp))) +
        y = "Slope of the Peak Exercise") +
   theme_test()
 ```
+
 En cas de malaltia, predomina el valor 2, en cas contrari, predomina el valor 1
 
 
@@ -343,6 +354,7 @@ Analitzem la distribució del nombre de vasos principals:
 ylim <- c(0, 1.5*max(table(as.factor(heart$caa))))
 bar_cp <- barplot(table(as.factor(heart$caa)), main="Nombre de vasos principals acolorits per fluorosopia", col="lightblue", ylim = ylim)
 ```
+
 El número 0 és el predominant i els següents van disminuint la seva representació de forma gradual.
 
 Analitzem el diagnòstic de la malaltia cardíaca per caa:
@@ -354,18 +366,23 @@ ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(caa))) +
        y = "Nombre de vasos principals") +
   theme_test()
 ```
+
 En cas de malaltia, predomina el número 0, en cas contrari, hi ha una equilibri relatiu.
 
 
 
 Analitzem la columna 'thall':
+
+
 ```{r}
 ylim <- c(0, 1.5*max(table(as.factor(heart$thall))))
 bar_cp <- barplot(table(as.factor(heart$thall)), main="'thall' Distribution", col="lightblue", ylim = ylim)
 ```
-Hi ha una ínfima representació del número 0.
 
-Analitzem el diagnòstic de la malaltia cardíaca per thall
+Trobem una baixa representació del número 0. Predomina el valor 2 seguit del 3.
+
+Analitzem el diagnòstic de la malaltia cardíaca per thall.
+
 ```{r}
 ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(thall))) + 
   geom_bar(position = "fill") +
@@ -374,7 +391,8 @@ ggplot(data = heart, aes(x = as.factor(output), fill = as.factor(thall))) +
        y = "thall") +
   theme_test()
 ```
-Extraiem un insight molt representatiu: aquells que pateixen la malaltia predomina el valor 2 de "thall", en canvi, d'aquells que no predomina el valor 3.
+
+Extraiem un insight molt representatiu: aquells que pateixen la malaltia predomina el valor 2 de "thall", en canvi, d'aquells que no, predomina el valor 3.
 
 
 
@@ -384,6 +402,7 @@ ylim <- c(0, 1.5*max(table(as.factor(heart$output))))
 bar_cp <- barplot(table(as.factor(heart$output)), main="Target 'output' distribution", col="darkblue", ylim = ylim)
 
 ```
+
 La columna objectiu 'output' està força equilibrada.
 
 
@@ -400,7 +419,8 @@ ggplot(heart, aes(x=age, y =..density..)) +
        x="Total", y="Edat")+
   geom_density(alpha=0.6, adjust = 2.25)
 ```
-Simètric amb tendència a tenir asimteria negativa.
+
+Força simètric, amb tendència a tenir asimteria negativa.
 
 ```{r}
 ggplot(heart, aes(x=trtbps, y =..density..)) +
@@ -410,7 +430,9 @@ ggplot(heart, aes(x=trtbps, y =..density..)) +
        x="Resting Blood Pressure", y="Total")+
   geom_density(alpha=0.6, adjust = 1.75)
 ```
-Simètric
+
+
+També presenta una distribució força simètrica.
 
 ```{r}
 ggplot(heart, aes(x=chol, y =..density..)) +
@@ -420,6 +442,7 @@ ggplot(heart, aes(x=chol, y =..density..)) +
        x="Colesterol", y="Total")+
   geom_density(alpha=0.6, adjust = 1.5)
 ```
+
 Simètric, però amb tendència a tenir asimetria positiva.
 
 ```{r}
@@ -430,7 +453,8 @@ ggplot(heart, aes(x=thalachh, y =..density..)) +
        x="Ratio de la màxima freqüència cardíaca", y="Total")+
   geom_density(alpha=0.6, adjust = 1.5)
 ```
-Asimetria negativa
+
+Presenta asimetria negativa.
 
 
 ```{r}
@@ -441,65 +465,28 @@ ggplot(heart, aes(x=oldpeak, y =..density..)) +
        x="'Oldpeak'", y="Total")+
   geom_density(alpha=0.6, adjust = 0.5)
 ```
-Distribució asimètrica totalment positiva
 
 
-# Cració dels sets d'entrenament i test
-
-Seguidament, generarem un set de dades d'entrenament, el qual contindrà el 80% dels registres, i un set de test, per a validar el model construit a partir de les dades d'entrenament.
-
-Considerem que és important, però, que la variable a predir, es trobi en la mateixa proporció entre el dataset d'entrenament i de test, per tal de no obtenir un model esbiaixat. Per a fer-ho, utilitzarem la funció  createDataPartition (de la llibreria caret), la qual permet assegurar que, en fer les particions, tinguem la mateixa proporció de la variable objectiu en ambdos datasets.
-
-Així doncs, executarem la funcó esmentada, passant com a paràmetre output (variable que volem predir), i una proporció de 0.8, doncs volem que el conjunt d'entrenament contingui el 80% dels registres. La funció retornarà uns índexos, amb els quals crearem els sets d'entrenament i test:
-```{r}
-set.seed(123)
-
-trainIndex <- createDataPartition(heart$output, p = .8,
-                                  list = FALSE,
-                                  times = 1)
-train <- heart[ trainIndex,]
-test <- heart[-trainIndex,]
-
-```
-
-Un cop feta la creació dels dos nous conjunts, validarem que, efectivament el d'entrenament contingui el 80% dels registres, i que els dos tinguin la mateixa proporció de registres amb valor d'opuput = 1:
-```{r}
-cat(paste("El set d'entrenament té ", toString(nrow(train)), "registres, i el de test ", toString(nrow(test)),". Per tant, el d'entrenament conté el ", toString(100 * nrow(train)/(nrow(train) + nrow(test))) , "% dels registres."))
-
-
-cat(paste("\nEl set d'entrenament té ", toString(nrow(train[train$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(train[train$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(train[train$output == 1,])/(nrow(train[train$output == 1,]) + nrow(train[train$output == 0,]))) , "% de pacients que han patit un atac de cor."))
-
-
-cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(test[test$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(test[test$output == 1,])/(nrow(test[test$output == 1,]) + nrow(test[test$output == 0,]))) , "% de pacients que han patit un atac de cor"))
-```
-
-```{r message=FALSE, warning=FALSE}
-roc <- roc(as.numeric(test$output),as.numeric(predicted_model))
-plot(roc,col="red",lwd=2,main="ROC test")
-legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
-```
-Finalment, obtenem una performance de 0.7656 que ens informa d'un valor diagnòstic positiu.
+Distribució asimètrica totalment positiva. La majoria de registres es concentren en valors entre 0 i 1.
 
 
 
 # Models generats
 
-Un cop tenim el dataset net i subdividit en entrenament i test, procedirem a realitzar diferents anàlisis i crear diferents models per predir informació relacionada amb el dataset.
+Ara, procedirem a realitzar diferents anàlisis i crear diferents models per predir informació relacionada amb el dataset.
 
 Per una banda, realitzarem un contrast de mitjanes per tal de saber si hi ha diferències entre la possibilitat d'un atac de cor entre homes i dones.
 
 També, analitzarem les correlacions entre els diferents atributs del dataset "heart" del que disposem.
 
-Per últim, crearem dos models supervisats, un de regressió logística i l'altra de Random Forest, per tal de predir les possibilitats d'atac de cor d'un pacient.
-
-
+Per últim, crearem dos models supervisats, un de regressió logística i l'altre un Random Forest, per tal de predir les possibilitats d'atac de cor d'un pacient.
 
 
 ## Anàlisi de la normalitat i homogeneïtat de la variància
 
 En primer lloc, abans d'aplicar cap model, és necessari conèixer si el conjunt de dades segueix una distribució normal i si presenta homoscedasticitat, doncs en base a axiò, podrem aplicar uns models o uns altres.
 
-Així doncs, començarem amb l'anàlisi de normalitat. Cal tenir present, però, que la variable independent que volem predir (output) es tracta d'un atribut binari, és a dir, només pot prendre dos possibles valors. Per tant, la distribució d'una variable dicotòmica mai podrà presentar una distribució normal.
+Així doncs, començarem amb l'anàlisi de normalitat. Cal tenir present, però, que la variable dependent que volem predir (output) es tracta d'un atribut binari, és a dir, només pot prendre dos possibles valors. Per tant, la distribució d'una variable dicotòmica mai podrà presentar una distribució normal.
 
 Tot i així, apliquem el test de Kolmogorov-Smirnov sota la hipòtesi nul·la de que les dades són normals. També aplicarem el test de Shapiro-Wilk.
 
@@ -513,7 +500,7 @@ Tot i així, en tenir un conjunt significativament gran (més de 30 registres) p
 
 Per altra banda, procedim a analitzar si el conjunt presenta homoscedasticitat, és a dir, igualtat de variància. Per a fer-ho, utilitzarem la funció var.test(). Aquest test l'aplicarem per saber si la variable output presenta igualtat de variàncies o no entre homes i dones.
 
-Per aconseguir-ho utilitzarem la funció var.test(), sota la hipòtesi nul·la d'igualtat de variàncies:
+Apliquem el test sota la hipòtesi nul·la d'igualtat de variàncies:
 
 ```{r}
 var.test( heart$output[heart$sex_cat=="F"], heart$output[heart$sex_cat=="M"] )
@@ -530,23 +517,14 @@ Utilitzarem només els atributs de tipus numèric:
 
 ```{r}
 mat <- cor(heart[,c("age", "sex",  "trtbps","chol","fbs","thalachh","exng","oldpeak","slp","caa","thall", "output")])
-#mat <- cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")])
-#corrplot(cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")]), method = #'color', tl.col = 'black') 
 
-#corrplot(cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")]), method = #'color', tl.col = 'black', sig.level=0.05,  tl.cex=font_size, insig="p-value") 
-
-#cor(heart[,c("age", "sex", "cp", "trtbps","chol","fbs","restecg","thalachh","exng","oldpeak","slp","caa","thall", "output")])
-#mat
-##corrplot(mat, method="color", p.mat = mat, insig="p-value",addshade="all")
-
-corrplot(mat, method = 'number', number.digits = 2, addCoef.col = 15,number.cex = 0.6
-) # colorful number
+corrplot(mat, method = 'number', number.digits = 2, addCoef.col = 15,number.cex = 0.6) # colorful number
 
 
 ```
 
 
-Del gràfic obtingut cal interpretar el següent. Si el nombre és positiu i proper a 1, les dues variables presenten correlació positiva, és a dir, les dues variables augmenten per igual. En canvi, si el valor és negatiu i proper a -1, les dues variables presenten correlació negativa, és a dir, mentres una es fa gran, l'altra es fa petita.
+Del gràfic obtingut cal interpretar el següent: si el nombre és positiu i proper a 1, les dues variables presenten correlació positiva, és a dir, les dues variables augmenten alhora En canvi, si el valor és negatiu i proper a -1, les dues variables presenten correlació negativa, és a dir, quan una augmenta l'altra disminueix. Per últim, si el valor és proper a zero significa que les variables no presenten correlació. 
 
 
 Si ens fixem en les correlacions respecte Output:
@@ -600,7 +578,43 @@ Obtenim un p-valor de pràcticament zero, fet que ens permet rebutjar la hipòte
 
 Donat que la variable a predir (output) conté una informació binària (1 = propens a patir un atac de cor; 0 = no propens a patir un atac de cor), el primer model que crearem serà una regressió logística, la qual permet predir una variable dicotòmica.
 
-En primera instància, inclourem totes les variables independents possibles, per tal de poder analitzar si totes elles són significatives o no. Així doncs, generem el model_glm_1 i en mostrem el seu summary:
+Abans, però, crearem subconjunts d'entrenament i test que ens serviran per entrenar i avaluar el model.
+
+
+### Cració dels sets d'entrenament i test
+
+Així doncs, generem un set de dades d'entrenament, el qual contindrà el 80% dels registres, i un set de test, per a validar els models construits a partir de les dades d'entrenament.
+
+Considerem que és important, però, que la variable a predir, es trobi en la mateixa proporció entre el dataset d'entrenament i de test, per tal de no obtenir un model esbiaixat. Per a fer-ho, utilitzarem la funció  createDataPartition (de la llibreria caret), la qual permet assegurar que, en fer les particions, tinguem la mateixa proporció de la variable objectiu en ambdos datasets.
+
+Així doncs, executarem la funció esmentada, passant com a paràmetre output (variable que volem predir), i una proporció de 0.8, doncs volem que el conjunt d'entrenament contingui el 80% dels registres. La funció retornarà uns índexos, amb els quals crearem els sets d'entrenament i test:
+
+```{r}
+set.seed(123)
+
+trainIndex <- createDataPartition(heart$output, p = .8,
+                                  list = FALSE,
+                                  times = 1)
+train <- heart[ trainIndex,]
+test <- heart[-trainIndex,]
+
+```
+
+Un cop feta la creació dels dos nous conjunts, validarem que, efectivament el d'entrenament contingui el 80% dels registres, i que els dos tinguin la mateixa proporció de registres amb valor d'opuput = 1:
+```{r}
+cat(paste("El set d'entrenament té ", toString(nrow(train)), "registres, i el de test ", toString(nrow(test)),". Per tant, el d'entrenament conté el ", toString(100 * nrow(train)/(nrow(train) + nrow(test))) , "% dels registres."))
+
+
+cat(paste("\nEl set d'entrenament té ", toString(nrow(train[train$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(train[train$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(train[train$output == 1,])/(nrow(train[train$output == 1,]) + nrow(train[train$output == 0,]))) , "% de pacients que han patit un atac de cor."))
+
+
+cat(paste("\nEl set de test té ", toString(nrow(test[test$output == 1,])), "registres amb valor output = 1 i ", toString(nrow(test[test$output == 0,]))," amb output = 0. Per tant, el dataset d'entrenament conté un ", toString(100 * nrow(test[test$output == 1,])/(nrow(test[test$output == 1,]) + nrow(test[test$output == 0,]))) , "% de pacients que han patit un atac de cor"))
+```
+
+
+### Implementació del model
+
+Pel model de regressió logística, en primera instància, inclourem totes les variables independents possibles, per tal de poder analitzar si totes elles són significatives o no. Així doncs, generem el model_glm_1 i en mostrem el seu summary:
 
 ```{r}
 model_glm_1 <- glm(output~age+sex_cat+cp_cat+trtbps+chol+fbs+restecg_cat+thalachh+exng+oldpeak+slp+caa+thall, data=train, family = binomial)
@@ -609,7 +623,7 @@ summary(model_glm_1)
 ```
 
 
-Del resultat obtingut, ens centrem en el p-valor de cada variable. Si aquest supera 0.05, podrem dir amb un 95% de confiança que la variable no és significativa. Recordem que una variable no-significativa és aquella que no té cap afectació sobre la variable dependent, generant per aquest atribut una recta de pendent zero en el model que no aporta cap informació.
+Del resultat obtingut, primerament ens centrem en el p-valor de cada variable. Si aquest supera 0.05, podrem dir amb un 95% de confiança que la variable no és significativa. Recordem que una variable no-significativa és aquella que no té cap afectació sobre la variable dependent, generant per aquest atribut una recta de pendent zero que no aporta cap informació en el model .
 
 Observem que hi ha una gran quantitat de variables que superen 0.05 de p-valor: age, trtbps, chol, fbs, restecg_cat, thalachh, exng i slp
 
@@ -618,7 +632,7 @@ Així doncs, aquestes variables són candidates a ser excloses del model final.
 
 Tot seguit, procedim a analitzar les Odds-Ratio de cada variable, les quals poden prendre els següent valors:
 
-Odd-Ratio proper a 1: Indica que no hi ha relació entre la covariable i la variable independent (output).
+Odd-Ratio proper a 1: Indica que no hi ha relació entre la covariable i la variable dependent (output).
 
 Odd-Ratio superior a 1: Es tracta d'un factor de risc, doncs si aquesta covariable està present, el succés (és  adir, que el pacient pateixi un atac de cor) és més probable.
 
@@ -702,12 +716,25 @@ nrow(resultat_model[resultat_model$output==1,])) ))
 
 ```
 
+Per últim, mostrem la corba ROC del model obtingut:
+
+
+```{r}
+roc <- roc(as.numeric(test$output),as.numeric(predicted_model))
+plot(roc,col="red",lwd=2,main="ROC test")
+legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
+```
+
+En aquest cas, obtnim una performance de 0.7656 que ens informa d'un valor diagnòstic positiu.
+
+
+
 
 
 ## Random Forest
 
 
-A continuació, per comparar amb el model anterior en concepte de rendiment, mostrarem un exemple d’aplicació d’un model random forest al conjunt de dades sobre el dataset original, mitjançant una validació creuada amb 4 folds on es divideixen les dades en entrenament i test per només aplicar l’entrenament mitjançant validació creuada al primer subconjunt. Posteriorment, mitjançant la funció predict() es prediu el resultat de les dades del subconjunt de test i es representen les diferents mesures de bondat del model, mitjançant la funció confusionMatrix(), especificant com a positius els casos d'infarts.
+A continuació, per comparar amb el model anterior en concepte de rendiment, mostrarem un exemple d’aplicació d’un model random forest al conjunt de dades sobre el dataset original, mitjançant una validació creuada amb 4 folds on es divideixen les dades en entrenament i test per només aplicar l’entrenament mitjançant validació creuada al primer subconjunt. Posteriorment, mitjançant la funció predict() es prediu el resultat de les dades del subconjunt de test i es representen les diferents mesures de bondat del model, mitjançant la funció confusionMatrix(), especificant com a positius els casos d'atac de cor.
 
 ```{r}
 set.seed(123)
@@ -737,6 +764,7 @@ pred <- predict(mod, newdata=data_test)
 CrossTable(data_test$output, pred, prop.chisq  = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c('Reality', 'Prediction'))
 confusionMatrix(pred,data_test$output, positive="1")
 ```
+
 Observem que el model generat ha predit correctament 84 dels 101 registres (~83,2%).
 
 Per una banda, tenim una sensibilitat del 85.5% i, per l'altra banda, una especificitat de 80%, en conseqüència, en tenim una precisió equilibrada de 83% on s'ajusta a un bon rendiment de model. A més, fem un gràfic per assegurar-nos de la qualitat d'aquest model:
@@ -746,11 +774,14 @@ roc <- roc(as.numeric(data_test$output),as.numeric(pred))
 plot(roc,col="red",lwd=2,main="ROC test")
 legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
 ```
+
 Finalitzem amb una performance de 0.8294 que ens informa d'un valor diagnòstic positiu.
 
 
 
-## Conclusions
+# Conclusions
+
+Les conclusions extretes en el marc d'aquesta pràctica són les següents:
 
 * Afirmem que, amb un nivell de confiança superior al 99%, hi ha diferències entre la possiblitat de patir un atac de cor entre homes i dones.
 * Les dones són més propenses a patir un infart que els homes.
@@ -761,6 +792,7 @@ Finalitzem amb una performance de 0.8294 que ens informa d'un valor diagnòstic 
 * Model GLM: 77,7% accuracy, especificitat de 0.75, sensibilitat de 0.78 i ROC de 0.77 .
 * Model RF: 83% accuracy, especificitat de 80%, sensibilitat de 0.83 i ROC de 0.83 .
 
+Finalment, emmagatzemem en un fitxer el dataset utilitzat, on s'ha realitzat una neteja i s'hi han afegit nous atributs calculats.
 
 ```{r}
 write.csv(heart, "HeartAttackAnalysis.csv")

@@ -15,7 +15,7 @@ Aquesta projecte s'ha realitzat sota el context de l'assignatura Tipologia i cic
 * **source/dataset/HeartAttackAnalysis.csv**: fitxer CSV del dataset modificat objecte d'anàlisis.
 * **source/05.584-PAC-header.html**: arxiu header de la UOC per knit.
 * **source/HeartAttackEDA.RMD**: arxiu codi font principal en llenguatge R.
-* **source/HHeartAttackEDA.html**: arxiu codi font principal en llenguatge R.
+* **source/HeartAttackEDA.html**: arxiu codi font principal en llenguatge R.
 
 
 ## Dataset

@@ -490,7 +490,7 @@ Així doncs, començarem amb l'anàlisi de normalitat. Cal tenir present, però,
 
 Tot i així, apliquem el test de Kolmogorov-Smirnov sota la hipòtesi nul·la de que les dades són normals. També aplicarem el test de Shapiro-Wilk.
 
-```{r}
+```{r warning=FALSE}
 ks.test(heart$output, pnorm, mean(heart$output), sd(heart$output))
 shapiro.test(heart$output)
 ```

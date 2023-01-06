@@ -13,6 +13,10 @@ Aquesta projecte s'ha realitzat sota el context de l'assignatura Tipologia i cic
 * **source/dataset**: carpeta modular on es localitza el dataset.
 * **source/dataset/heart.csv**: fitxer CSV del dataset original.
 * **source/dataset/HeartAttackAnalysis.csv**: fitxer CSV del dataset modificat objecte d'anàlisis.
+* **source/05.584-PAC-header.html**: arxiu header de la UOC per knit.
+* **source/HeartAttackEDA.RMD**: arxiu codi font principal en llenguatge R.
+* **source/HHeartAttackEDA.html**: arxiu codi font principal en llenguatge R.
+
 
 ## Dataset
 Originari de Kaggel en format CSV: https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset

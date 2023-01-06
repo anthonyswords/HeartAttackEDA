@@ -795,5 +795,5 @@ Les conclusions extretes en el marc d'aquesta pràctica són les següents:
 Finalment, emmagatzemem en un fitxer el dataset utilitzat, on s'ha realitzat una neteja i s'hi han afegit nous atributs calculats.
 
 ```{r}
-write.csv(heart, "HeartAttackAnalysis.csv")
+write.csv(heart, "./dataset/HeartAttackAnalysis.csv")
 ```

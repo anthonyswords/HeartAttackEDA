@@ -789,7 +789,7 @@ Les conclusions extretes en el marc d'aquesta pràctica són les següents:
 * La variable cp és un factor de risc (Un valor elevat en aquesta variable fa que sigui més probable l'atac de cor).
 * Tot i així, ens fixem que en valor absolut, tenim un nivell bastant baix de correlació entre les variables i el succés output.
 * Model GLM: 77,7% accuracy, especificitat de 0.75, sensibilitat de 0.78 i ROC de 0.77 .
-* Model RF: 83% accuracy, especificitat de 80%, sensibilitat de 0.83 i ROC de 0.83 .
+* Model RF: 83% accuracy, especificitat de 0.80, sensibilitat de 0.85 i ROC de 0.83 .
 
 Finalment, emmagatzemem en un fitxer el dataset utilitzat, on s'ha realitzat una neteja i s'hi han afegit nous atributs calculats.
 

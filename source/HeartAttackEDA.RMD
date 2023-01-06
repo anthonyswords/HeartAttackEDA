@@ -520,7 +520,6 @@ mat <- cor(heart[,c("age", "sex",  "trtbps","chol","fbs","thalachh","exng","oldp
 
 corrplot(mat, method = 'number', number.digits = 2, addCoef.col = 15,number.cex = 0.6) # colorful number
 
-
 ```
 
 
@@ -719,7 +718,7 @@ nrow(resultat_model[resultat_model$output==1,])) ))
 Per últim, mostrem la corba ROC del model obtingut:
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 roc <- roc(as.numeric(test$output),as.numeric(predicted_model))
 plot(roc,col="red",lwd=2,main="ROC test")
 legend("bottomright",legend=paste("AUC=",round(auc(roc),4)))
